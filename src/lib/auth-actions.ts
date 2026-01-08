@@ -4,10 +4,10 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
 /**
- * CRITICAL: This import MUST match the new filename userActions.ts exactly.
- * This breaks the Linux build cache that was causing the "Module not found" error.
+ * ARCHITECTURE FIX: Using the @ alias ensures the compiler finds the file
+ * regardless of the 'workspace' ghost folder or Linux case-sensitivity.
  */
-import { getUserByEmail } from './userActions'; 
+import { getUserByEmail } from '@/lib/userActions'; 
 
 export async function signIn(payload: { email: string; role: string; company: string }) {
   const cookieStore = cookies();
