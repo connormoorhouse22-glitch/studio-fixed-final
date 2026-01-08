@@ -12,7 +12,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { addUser, getUsers } from '@/lib/user-actions';
+import { addUser, getUsers } from '@/lib/userActions';
 import { Textarea } from '@/components/ui/textarea';
 import type { User } from '@/lib/users';
 

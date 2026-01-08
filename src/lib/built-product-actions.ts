@@ -8,7 +8,7 @@ import { revalidatePath } from 'next/cache';
 import { createOrdersFromCart, createOrderForQuote, type Order } from './order-actions';
 import type { CartItem } from '@/hooks/use-cart';
 import { cookies } from 'next/headers';
-import { getUserByEmail, getUserByCompany } from './user-actions';
+import { getUserByEmail, getUserByCompany } from './userActions';
 
 export type BuiltProduct = {
   id: string;

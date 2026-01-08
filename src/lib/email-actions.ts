@@ -19,7 +19,7 @@ import { DeliveryRecordNotificationEmail } from '@/components/emails/delivery-re
 import type { Order } from './order-actions';
 import { getOrderById } from './order-actions';
 import type { Booking } from './booking-actions';
-import { getUserByCompany, getUserByEmail } from './user-actions';
+import { getUserByCompany, getUserByEmail } from './userActions';
 import { smtpConfig } from './smtp-credentials';
 import type { User } from './users';
 import { getProductById } from './product-actions';

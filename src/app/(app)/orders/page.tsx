@@ -15,7 +15,7 @@ import { cookies } from 'next/headers';
 import { format } from 'date-fns';
 import { UpdateStatusDropdown } from './update-status-dropdown';
 import { cn } from '@/lib/utils';
-import { getUserByCompany } from '@/lib/user-actions';
+import { getUserByCompany } from '@/lib/userActions';
 import { ResendNotificationButton } from './resend-notification-button';
 import { ConfirmDeliveryButton } from './confirm-delivery-button';
 

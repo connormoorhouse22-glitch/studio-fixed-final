@@ -3,7 +3,7 @@
 
 import { getAuth, sendPasswordResetEmail } from 'firebase/auth';
 import { initializeFirebase } from '@/firebase';
-import { getUserByEmail } from '@/lib/user-actions';
+import { getUserByEmail } from '@/lib/userActions';
 
 export interface PasswordResetState {
   success: boolean;

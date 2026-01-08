@@ -13,6 +13,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { signIn } from '@/lib/auth-actions';
 import { logAuditEvent } from '@/lib/audit-log-actions';
+import { getUserByEmail } from '@/lib/userActions';
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -29,12 +30,17 @@ export default function AdminLoginPage() {
     
     if (isAdminLogin) {
         try {
-            const adminUser = {
-                name: 'Admin',
-                email: 'info@winespace.co.za',
-                role: 'Admin',
-                company: 'WineSpace SA',
-            };
+            const adminUser = await getUserByEmail(email);
+
+            if (!adminUser) {
+                toast({
+                    variant: 'destructive',
+                    title: 'Login Error',
+                    description: 'Admin user profile not found in database.',
+                });
+                setIsLoading(false);
+                return;
+            }
 
             await signIn({
                 email: adminUser.email,

@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { getUsers, approveUser } from '@/lib/user-actions';
+import { getUsers, approveUser } from '@/lib/userActions';
 import { ApproveUserButton } from './approve-user-button';
 import { DeleteUserDialog } from './delete-user-dialog';
 import { EditUserDialog } from './edit-user-dialog';

@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { getUserByEmail } from '@/lib/user-actions';
+import { getUserByEmail } from '@/lib/userActions';
 import type { User } from '@/lib/users';
 import { signOut } from '@/lib/auth-actions';
 import { Skeleton } from './ui/skeleton';

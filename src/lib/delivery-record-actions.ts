@@ -5,7 +5,7 @@ import { collection, doc, getDocs, addDoc, query, where, orderBy } from 'firebas
 import { getFirestoreInstance } from '@/lib/firebase';
 import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
-import { getUserByEmail } from './user-actions';
+import { getUserByEmail } from './userActions';
 import { sendDeliveryRecordEmail } from './email-actions';
 import { toDeliveryRecord } from './firebase-helpers';
 

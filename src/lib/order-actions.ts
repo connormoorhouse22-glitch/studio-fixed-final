@@ -6,7 +6,7 @@ import { getFirestoreInstance } from '@/lib/firebase';
 import type { Product } from './product-actions';
 import { revalidatePath } from 'next/cache';
 import type { CartItem } from '@/hooks/use-cart';
-import { getUserByEmail, getUserByCompany } from './user-actions';
+import { getUserByEmail, getUserByCompany } from './userActions';
 import { cookies } from 'next/headers';
 import { updateStockLevelForOrder } from './stock-actions';
 import { logAuditEvent } from './audit-log-actions';
