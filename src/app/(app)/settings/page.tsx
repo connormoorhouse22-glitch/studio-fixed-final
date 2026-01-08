@@ -3,7 +3,7 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProfileSettings } from '@/app/(app)/settings/profile-settings';
-import { EmailSettings } from '@/app/(app)/settings/email-settings';
+import { EmailSettings } from './email-settings.tsx';
 import { cookies } from 'next/headers';
 import { getUserByEmail } from '@/lib/userActions';
 
@@ -31,3 +31,4 @@ export default async function SettingsPage() {
     </div>
   );
 }
+// Cache-bust: 1767884900
