@@ -3,7 +3,7 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProfileSettings } from './profile-settings';
-import { EmailSettings } from './email-settings';
+import { EmailSettings } from './email-settings.tsx';
 import { cookies } from 'next/headers';
 import { getUserByEmail } from '@/lib/userActions';
 
