@@ -2,8 +2,12 @@
 
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-// Ensure this filename is exactly 'user-actions.ts' in your folder
-import { getUserByEmail } from './user-actions'; 
+
+/**
+ * CRITICAL: This import MUST match the new filename userActions.ts exactly.
+ * This breaks the Linux build cache that was causing the "Module not found" error.
+ */
+import { getUserByEmail } from './userActions'; 
 
 export async function signIn(payload: { email: string; role: string; company: string }) {
   const cookieStore = cookies();
