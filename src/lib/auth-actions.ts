@@ -1,9 +1,9 @@
+
 'use server';
 
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-// Explicitly adding the lowercase import to resolve the build conflict
-import './user-actions'; 
+import { getUserByEmail } from './user-actions';
 
 export async function signIn(payload: { email: string; role: string; company: string }) {
   const cookieStore = cookies();
