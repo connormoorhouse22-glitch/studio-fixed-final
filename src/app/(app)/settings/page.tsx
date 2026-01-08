@@ -3,7 +3,7 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProfileSettings } from '@/app/(app)/settings/profile-settings';
-import { EmailSettings } from './email-settings-v2';
+import { EmailSettings } from '@/components/booking-fix/email-settings';
 import { cookies } from 'next/headers';
 import { getUserByEmail } from '@/lib/userActions';
 
