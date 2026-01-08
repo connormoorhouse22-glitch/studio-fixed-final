@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { Input } from '@/components/ui/input';
 import { PlusCircle, Trash2, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { getFiltrationOptions, updateFiltrationOptions } from '@/lib/user-actions';
+import { getFiltrationOptions, updateFiltrationOptions } from '@/lib/userActions';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function FiltrationSettingsPage() {

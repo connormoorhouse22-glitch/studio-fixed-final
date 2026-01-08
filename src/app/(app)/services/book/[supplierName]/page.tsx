@@ -14,7 +14,7 @@ import { BookingForm } from './booking-form';
 import { CalendarDays, Bot, DoorOpen } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import type { User } from '@/lib/users';
-import { getUserByEmail, getFiltrationOptions, getSuppliersByService } from '@/lib/user-actions';
+import { getUserByEmail, getFiltrationOptions, getSuppliersByService } from '@/lib/userActions';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';

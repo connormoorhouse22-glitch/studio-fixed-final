@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { updateUser } from '@/lib/user-actions';
+import { updateUser } from '@/lib/userActions';
 import type { User, UpdateUserResponse } from '@/lib/users';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';

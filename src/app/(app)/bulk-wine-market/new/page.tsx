@@ -17,7 +17,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { createBulkWineListing } from '@/lib/bulk-wine-actions';
-import { getProducerNames } from '@/lib/user-actions';
+import { getProducerNames } from '@/lib/userActions';
 import { Skeleton } from '@/components/ui/skeleton';
 
 const listingSchema = z.object({

@@ -5,7 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProfileSettings } from './profile-settings';
 import { EmailSettings } from './email-settings';
 import { cookies } from 'next/headers';
-import { getUserByEmail } from '@/lib/user-actions';
+import { getUserByEmail } from '@/lib/userActions';
 
 
 export default async function SettingsPage() {
