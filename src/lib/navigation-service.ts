@@ -2,7 +2,7 @@
 'use server';
 
 import type { NavLink as BaseNavLink } from './nav-links';
-import { getUsers } from './user-actions';
+import { getUsers } from './userActions';
 import { bottleSuppliers, dryGoodsSuppliers, wineAdditionsSuppliers } from './constants';
 
 // Helper to create a URL-friendly slug

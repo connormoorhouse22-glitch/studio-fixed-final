@@ -1,7 +1,7 @@
 
 'use server';
 
-import { getUserByEmail } from './user-actions';
+import { getUserByEmail } from './userActions';
 import { cookies } from 'next/headers';
 import { createOrderForQuote } from './order-actions';
 import { revalidatePath } from 'next/cache';

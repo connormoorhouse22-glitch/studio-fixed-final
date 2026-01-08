@@ -5,7 +5,7 @@ import { cookies } from 'next/headers';
 import { getBulkWineListings, type BulkWineListing } from './bulk-wine-actions';
 import { getOrders, type Order } from './order-actions';
 import { getProducts, type Product } from './product-actions';
-import { getUsers, type User } from './user-actions';
+import { getUsers, type User } from './userActions';
 
 export interface SearchableData {
   products: Product[];
