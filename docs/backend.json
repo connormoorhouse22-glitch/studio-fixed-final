@@ -1,0 +1,139 @@
+
+{
+  "entities": {
+    "UserProfile": {
+      "title": "User Profile",
+      "description": "Represents a user's profile information.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "The user's full name."
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "description": "The user's email address."
+        },
+        "company": {
+          "type": "string",
+          "description": "The company the user belongs to."
+        },
+        "role": {
+          "type": "string",
+          "enum": ["Admin", "Producer", "Supplier", "Mobile Service Provider"],
+          "description": "The user's role in the system."
+        },
+        "status": {
+          "type": "string",
+          "enum": ["Active", "Inactive", "Pending Approval"],
+          "description": "The current status of the user's account."
+        },
+        "avatar": {
+          "type": "string",
+          "format": "uri",
+          "description": "URL to the user's avatar image."
+        },
+        "lastLogin": {
+          "type": "string",
+          "description": "Timestamp of the user's last login."
+        },
+        "isOnline": {
+          "type": "boolean",
+          "description": "Indicates if the user is currently considered online."
+        },
+        "lastSeen": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp of when the user was last active."
+        },
+        "pricingTiers": {
+          "type": "object",
+          "description": "A map of supplier-specific pricing tiers."
+        },
+        "preferredSupplierContacts": {
+            "type": "object",
+            "description": "A map of preferred supplier contacts."
+        },
+        "billingAddress": {
+            "type": "string",
+            "description": "The user's billing address."
+        },
+        "vatNumber": {
+            "type": "string",
+            "description": "The user's VAT number."
+        },
+        "contactNumber": {
+            "type": "string",
+            "description": "The user's contact phone number."
+        },
+        "services": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            }
+        },
+        "filtrationOptions": {
+          "type": "array",
+          "description": "A list of filtration types offered by a Mobile Service Provider.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "signatureUrl": {
+            "type": "string",
+            "format": "uri",
+            "description": "URL to the user's signature image."
+        }
+      },
+      "required": ["name", "email", "company", "role", "status"]
+    },
+    "WineryVessel": {
+      "title": "Winery Vessel",
+      "description": "Represents a single tank or barrel group in a producer's cellar.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "description": "The unique name or code for the vessel (e.g., 'T101', '2023 Merlot Barrels')." },
+        "type": { "type": "string", "enum": ["SS-Tank", "Barrel Group"], "description": "The type of vessel." },
+        "capacityLitres": { "type": "number", "description": "The total capacity of the vessel in litres." },
+        "barrelCount": { "type": "number", "description": "For barrel groups, the number of barrels." },
+        "currentContents": { "type": "string", "description": "A description of the wine currently held in the vessel." }
+      },
+      "required": ["name", "type"]
+    },
+    "CellarLogEntry": {
+      "title": "Cellar Log Entry",
+      "description": "Represents a single action taken on a wine, such as adding a product.",
+      "type": "object",
+      "properties": {
+        "vesselId": { "type": "string", "description": "The ID of the vessel the action was performed on." },
+        "vesselName": { "type": "string", "description": "The name of the vessel at the time of logging." },
+        "productId": { "type": "string", "description": "The ID of the product that was added." },
+        "productName": { "type": "string", "description": "The name of the product that was added." },
+        "quantityUsed": { "type": "number", "description": "The amount of the product used (e.g., in grams or mL)." },
+        "unit": { "type": "string", "description": "The unit of measurement for the quantity used." },
+        "reason": { "type": "string", "description": "The reason for the addition or action." },
+        "timestamp": { "type": "string", "format": "date-time", "description": "When the action was performed." },
+        "producerEmail": { "type": "string", "format": "email", "description": "The email of the producer who performed the action." }
+      },
+      "required": ["vesselId", "vesselName", "productId", "productName", "quantityUsed", "unit", "timestamp", "producerEmail"]
+    }
+  },
+  "auth": {
+    "providers": ["password"]
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserProfile" },
+      "description": "Stores public profiles for all users."
+    },
+    "/users/{userId}/vessels/{vesselId}": {
+      "schema": { "$ref": "#/entities/WineryVessel" },
+      "description": "Stores the winery vessels for a specific producer."
+    },
+    "/users/{userId}/cellar-log/{logEntryId}": {
+      "schema": { "$ref": "#/entities/CellarLogEntry" },
+      "description": "Stores the immutable log of cellar activities for a producer."
+    }
+  }
+}

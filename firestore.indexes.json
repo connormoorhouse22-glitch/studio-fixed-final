@@ -1,0 +1,24 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "sawisReturns",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "producerEmail",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "__name__",
+          "order": "DESCENDING"
+        }
+      ],
+      "density": "SPARSE_ALL"
+    }
+  ],
+  "fieldOverrides": []
+}

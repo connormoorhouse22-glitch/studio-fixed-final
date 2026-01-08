@@ -1,0 +1,54 @@
+
+
+'use server';
+
+import { Suspense } from 'react';
+import { BookingsCalendar } from './calendar-client-component';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+
+function CalendarSkeleton() {
+    return (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <Card className="lg:col-span-2">
+                <CardHeader>
+                    <Skeleton className="h-8 w-3/4" />
+                    <Skeleton className="h-4 w-1/2" />
+                </CardHeader>
+                <CardContent className="p-4 flex justify-center">
+                    <Skeleton className="h-[300px] w-full max-w-md" />
+                </CardContent>
+                <CardContent>
+                    <Skeleton className="h-6 w-full" />
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader>
+                    <Skeleton className="h-8 w-1/2" />
+                    <Skeleton className="h-4 w-3/4" />
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <Skeleton className="h-16 w-full" />
+                    <Skeleton className="h-16 w-full" />
+                    <Skeleton className="h-16 w-full" />
+                </CardContent>
+            </Card>
+        </div>
+    );
+}
+
+export default async function ServiceProviderBookingsPage() {
+    return (
+        <div className="flex flex-col gap-8">
+            <div>
+                <h2 className="text-3xl font-bold tracking-tight">Your Bookings Calendar</h2>
+                <p className="text-muted-foreground">
+                    View all upcoming bookings and manage new requests from producers.
+                </p>
+            </div>
+            <Suspense fallback={<CalendarSkeleton />}>
+                <BookingsCalendar />
+            </Suspense>
+        </div>
+    );
+}

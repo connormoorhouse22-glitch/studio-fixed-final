@@ -1,0 +1,393 @@
+
+
+'use client';
+
+import { useState, useMemo, useEffect } from 'react';
+import { format } from 'date-fns';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Calendar } from '@/components/ui/calendar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Check, X, User, Phone, MapPin, Bot, Edit, Trash2 } from 'lucide-react';
+import { getSupplierBookings, type Booking, updateBookingStatus, type WorkOrder } from '@/lib/booking-actions';
+import { getMachines, type Machine } from '@/lib/machine-actions';
+import { useToast } from '@/hooks/use-toast';
+import { Separator } from '@/components/ui/separator';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
+import { EditBookingForm } from './edit-booking-form';
+import { DeleteBookingDialog } from './delete-booking-dialog';
+import { Skeleton } from '@/components/ui/skeleton';
+import { ViewBookingDialog } from './view-booking-dialog';
+import { ViewMultipleBookingsDialog } from './view-multiple-bookings-dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+
+function CalendarSkeleton() {
+    return (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <Card className="lg:col-span-2">
+                <CardHeader>
+                    <Skeleton className="h-8 w-3/4" />
+                    <Skeleton className="h-4 w-1/2" />
+                </CardHeader>
+                <CardContent className="p-4 flex justify-center">
+                    <Skeleton className="h-[300px] w-full max-w-md" />
+                </CardContent>
+                <CardContent>
+                    <Skeleton className="h-6 w-full" />
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader>
+                    <Skeleton className="h-8 w-1/2" />
+                    <Skeleton className="h-4 w-3/4" />
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <Skeleton className="h-16 w-full" />
+                    <Skeleton className="h-16 w-full" />
+                    <Skeleton className="h-16 w-full" />
+                </CardContent>
+            </Card>
+        </div>
+    );
+}
+
+export function BookingsCalendar() {
+    const [bookings, setBookings] = useState<Booking[]>([]);
+    const [machines, setMachines] = useState<Machine[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const { toast } = useToast();
+    const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
+    const [isSheetOpen, setIsSheetOpen] = useState(false);
+    const [isDetailsDialogOpen, setIsDetailsDialogOpen] = useState(false);
+    const [bookingsOnSelectedDate, setBookingsOnSelectedDate] = useState<Booking[]>([]);
+    const [isMultiBookingDialogOpen, setIsMultiBookingDialogOpen] = useState(false);
+
+    // State for managing machine assignments in the UI
+    const [workOrdersWithAssignments, setWorkOrdersWithAssignments] = useState<WorkOrder[]>([]);
+
+    const fetchAndSetData = async () => {
+        setIsLoading(true);
+        const providerCompany = localStorage.getItem('userCompany');
+        if (providerCompany) {
+            const [bookingData, machineData] = await Promise.all([
+                getSupplierBookings(providerCompany),
+                getMachines(providerCompany)
+            ]);
+            setBookings(bookingData);
+            setMachines(machineData);
+        }
+        setIsLoading(false);
+    };
+
+    useEffect(() => {
+        fetchAndSetData();
+    }, []);
+
+    useEffect(() => {
+        if (selectedBooking) {
+            setWorkOrdersWithAssignments(selectedBooking.workOrders);
+        }
+    }, [selectedBooking]);
+
+    const pendingBookings = useMemo(() => bookings.filter(b => b.status === 'pending').sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()), [bookings]);
+    
+    const { confirmedBookings, fullyBookedDates } = useMemo(() => {
+        const confirmed: Date[] = [];
+        const bookingsByDate: { [key: string]: Booking[] } = {};
+        const fullyBooked = new Set<string>();
+
+        const numBottlingMachines = machines.filter(m => m.type === 'Bottling').length;
+        const numLabellingMachines = machines.filter(m => m.type === 'Labelling').length;
+
+        bookings.forEach(booking => {
+            if (booking.status === 'confirmed') {
+                const dateStr = new Date(booking.date).toDateString();
+                 if (!bookingsByDate[dateStr]) {
+                    bookingsByDate[dateStr] = [];
+                }
+                bookingsByDate[dateStr].push(booking);
+                confirmed.push(new Date(booking.date));
+            }
+        });
+
+        for (const dateStr in bookingsByDate) {
+            const dailyBookings = bookingsByDate[dateStr];
+            const confirmedBottling = dailyBookings.filter(b => b.workOrders.some(wo => wo.service === 'Mobile Bottling')).length;
+            const confirmedLabelling = dailyBookings.filter(b => b.workOrders.some(wo => wo.service === 'Mobile Labelling')).length;
+            
+            if (numBottlingMachines > 0 && confirmedBottling >= numBottlingMachines) {
+                 fullyBooked.add(dateStr);
+            }
+            if (numLabellingMachines > 0 && confirmedLabelling >= numLabellingMachines) {
+                // If already fully booked by bottling, no need to add again
+                if (!fullyBooked.has(dateStr)) {
+                    fullyBooked.add(dateStr);
+                }
+            }
+        }
+        
+        return { confirmedBookings: confirmed, fullyBookedDates: Array.from(fullyBooked).map(d => new Date(d)) };
+    }, [bookings, machines]);
+
+
+    const handleStatusUpdate = async (bookingId: string, newStatus: 'confirmed' | 'rejected') => {
+        const originalBookings = [...bookings];
+        const optimisticBooking = originalBookings.find(b => b.id === bookingId);
+        
+        // Optimistically update UI
+        if (optimisticBooking) {
+            const updatedBooking = { ...optimisticBooking, status: newStatus, workOrders: workOrdersWithAssignments };
+            setBookings(prev => prev.map(b => b.id === bookingId ? updatedBooking : b));
+        }
+        setIsSheetOpen(false);
+
+        const result = await updateBookingStatus(bookingId, newStatus, workOrdersWithAssignments);
+        if (result.success) {
+            toast({
+                title: 'Booking Updated',
+                description: `Booking from ${originalBookings.find(b=>b.id === bookingId)?.producerCompany} has been ${newStatus}.`,
+            });
+            await fetchAndSetData();
+        } else {
+            // Revert on failure
+            setBookings(originalBookings);
+            toast({
+                variant: 'destructive',
+                title: 'Update Failed',
+                description: result.message,
+            });
+        }
+    };
+    
+    const handleWorkOrderMachineChange = (index: number, machineId: string) => {
+        const newWorkOrders = [...workOrdersWithAssignments];
+        newWorkOrders[index] = { ...newWorkOrders[index], assignedMachineId: machineId };
+        setWorkOrdersWithAssignments(newWorkOrders);
+    };
+
+    const handleDateClick = (day: Date) => {
+        const dateString = day.toISOString().split('T')[0];
+        const bookingsForDay = bookings.filter(b => b.date.startsWith(dateString));
+
+        if (bookingsForDay.length === 0) return;
+
+        if (bookingsForDay.length > 1) {
+            setBookingsOnSelectedDate(bookingsForDay);
+            setIsMultiBookingDialogOpen(true);
+        } else {
+            const singleBooking = bookingsForDay[0];
+            setSelectedBooking(singleBooking);
+            if (singleBooking.status === 'pending') {
+                setIsSheetOpen(true);
+            } else {
+                setIsDetailsDialogOpen(true);
+            }
+        }
+    }
+    
+    const handleManageBookingFromList = (booking: Booking) => {
+        setSelectedBooking(booking);
+        if (booking.status === 'pending') {
+            setIsSheetOpen(true);
+        } else {
+            setIsDetailsDialogOpen(true);
+        }
+        setIsMultiBookingDialogOpen(false);
+    };
+
+    const handleOnUpdateSuccess = () => {
+        setIsSheetOpen(false);
+        setIsDetailsDialogOpen(false);
+        fetchAndSetData();
+    }
+
+    const calendarModifiers = {
+        confirmed: confirmedBookings,
+        pending: pendingBookings.map(b => new Date(b.date)),
+        fullyBooked: fullyBookedDates,
+    };
+
+    const calendarModifierStyles = {
+        confirmed: { 
+            backgroundColor: '#22c55e', // Green
+            color: 'hsl(var(--primary-foreground))',
+        },
+        pending: { 
+            backgroundColor: '#f59e0b', // Yellow
+            color: 'hsl(var(--accent-foreground))', 
+        },
+        fullyBooked: {
+            backgroundColor: '#ef4444', // Red
+            color: 'hsl(var(--destructive-foreground))',
+        }
+    };
+    
+    if (isLoading) {
+        return <CalendarSkeleton />;
+    }
+
+    return (
+        <>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <Card className="lg:col-span-2">
+                <CardHeader>
+                    <CardTitle>Master Calendar</CardTitle>
+                    <CardDescription>Overview of all scheduled and requested dates. Click a date to see details.</CardDescription>
+                </CardHeader>
+                <CardContent className="flex justify-center">
+                    <Calendar
+                        mode="single"
+                        onDayClick={handleDateClick}
+                        modifiers={calendarModifiers}
+                        modifiersStyles={calendarModifierStyles}
+                        className="p-0"
+                        disabled={fullyBookedDates}
+                    />
+                </CardContent>
+                <CardContent>
+                    <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
+                        <div className="flex items-center"><div className="w-4 h-4 rounded-full mr-2 border bg-background" />Available</div>
+                        <div className="flex items-center"><div className="w-4 h-4 rounded-full mr-2" style={calendarModifierStyles.confirmed} />Confirmed</div>
+                        <div className="flex items-center"><div className="w-4 h-4 rounded-full mr-2" style={calendarModifierStyles.pending} />Pending</div>
+                        <div className="flex items-center"><div className="w-4 h-4 rounded-full mr-2" style={calendarModifierStyles.fullyBooked} />Fully Booked</div>
+                    </div>
+                </CardContent>
+            </Card>
+            <Card>
+                <CardHeader>
+                    <CardTitle>Pending Requests</CardTitle>
+                    <CardDescription>Action required on new bookings.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    {pendingBookings.length > 0 ? (
+                        pendingBookings.map(booking => (
+                            <div key={booking.id} className="p-3 border rounded-lg">
+                                <p className="font-semibold">{booking.producerCompany}</p>
+                                <p className="text-sm text-muted-foreground">{format(new Date(booking.date), 'PPP')}</p>
+                                <p className="text-xs text-muted-foreground">{booking.workOrders.map(wo => wo.service).join(', ')}</p>
+                                <Separator className="my-2" />
+                                <Button size="sm" className="w-full" onClick={() => handleManageBookingFromList(booking)}>Manage</Button>
+                            </div>
+                        ))
+                    ) : (
+                        <div className="text-center text-muted-foreground py-10">
+                            <Bot className="mx-auto h-12 w-12" />
+                            <p className="mt-2">No pending requests.</p>
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
+        </div>
+        
+        {selectedBooking && <ViewBookingDialog 
+            booking={selectedBooking} 
+            machines={machines}
+            open={isDetailsDialogOpen} 
+            onOpenChange={setIsDetailsDialogOpen} 
+            onSuccess={handleOnUpdateSuccess}
+        />}
+
+        {bookingsOnSelectedDate.length > 0 && (
+            <ViewMultipleBookingsDialog
+                bookings={bookingsOnSelectedDate}
+                open={isMultiBookingDialogOpen}
+                onOpenChange={setIsMultiBookingDialogOpen}
+                onManageBooking={handleManageBookingFromList}
+            />
+        )}
+
+
+        <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
+            <SheetContent className="w-full sm:max-w-lg flex flex-col">
+                <SheetHeader>
+                    <SheetTitle>Manage Booking Request</SheetTitle>
+                    {selectedBooking && <SheetDescription>From: {selectedBooking.producerCompany} for {format(new Date(selectedBooking.date), 'PPP')}</SheetDescription>}
+                </SheetHeader>
+                {selectedBooking && workOrdersWithAssignments.length > 0 && (
+                    <>
+                        <div className="py-4 space-y-6 overflow-y-auto pr-4 flex-grow">
+                            {workOrdersWithAssignments.map((workOrder, index) => {
+                                const availableMachines = machines.filter(m => m.type === workOrder.service.replace('Mobile ', ''));
+                                return (
+                                <div key={index} className="p-4 border rounded-lg bg-muted/50 space-y-4">
+                                    <div className="space-y-2">
+                                        <h4 className="font-semibold">Work Order #{index + 1}</h4>
+                                        <div className="text-sm space-y-1 text-muted-foreground">
+                                            <p><strong className="w-24 inline-block">Service:</strong> {workOrder.service}</p>
+                                            <p><strong className="w-24 inline-block">Cultivar:</strong> {workOrder.cultivar}</p>
+                                            <p><strong className="w-24 inline-block">Vintage:</strong> {workOrder.vintage}</p>
+                                            <p><strong className="w-24 inline-block">Volume:</strong> {workOrder.volumeLiters.toLocaleString()} L</p>
+                                            <p><strong className="w-24 inline-block">Bottle Type:</strong> {workOrder.bottleType}</p>
+                                            <p><strong className="w-24 inline-block">Closure:</strong> {workOrder.closureType}</p>
+                                        </div>
+                                    </div>
+                                    {workOrder.specialInstructions && (
+                                        <>
+                                        <Separator className="my-2" />
+                                        <div className="space-y-2">
+                                            <h4 className="font-semibold">Special Instructions</h4>
+                                            <p className="text-sm text-muted-foreground italic">"{workOrder.specialInstructions}"</p>
+                                        </div>
+                                        </>
+                                    )}
+                                     <Separator />
+                                    <div className="space-y-2">
+                                        <Label htmlFor={`machine-allocation-${index}`} className="font-semibold">Machine Allocation</Label>
+                                        <Select 
+                                            onValueChange={(machineId) => handleWorkOrderMachineChange(index, machineId)}
+                                            defaultValue={workOrder.assignedMachineId}
+                                        >
+                                            <SelectTrigger id={`machine-allocation-${index}`}>
+                                                <SelectValue placeholder="Select a machine..." />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                {availableMachines.length > 0 ? (
+                                                    availableMachines.map(m => (
+                                                        <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>
+                                                    ))
+                                                ) : (
+                                                    <div className="p-4 text-center text-sm text-muted-foreground">No {workOrder.service.replace('Mobile ', '')} machines found.</div>
+                                                )}
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                </div>
+                                )
+                            })}
+                            <div className="p-4 border rounded-lg bg-background space-y-2">
+                                <h4 className="font-semibold">Producer Details</h4>
+                                <div className="text-sm space-y-1 text-muted-foreground">
+                                    <p className="flex items-center"><User className="h-4 w-4 mr-2"/> {selectedBooking.workOrders[0]?.contactPerson}</p>
+                                    <p className="flex items-center"><Phone className="h-4 w-4 mr-2"/> {selectedBooking.workOrders[0]?.contactNumber}</p>
+                                    <p className="flex items-center"><MapPin className="h-4 w-4 mr-2"/> {selectedBooking.workOrders[0]?.location}</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="mt-auto pt-4 border-t space-y-4">
+                            <div className="space-y-2">
+                                <h4 className="font-semibold">Actions</h4>
+                                <div className="grid grid-cols-2 gap-2">
+                                    <Button variant="destructive" onClick={() => handleStatusUpdate(selectedBooking.id, 'rejected')}><X className="mr-2 h-4 w-4" />Reject</Button>
+                                    <Button variant="default" onClick={() => handleStatusUpdate(selectedBooking.id, 'confirmed')} className="bg-green-600 hover:bg-green-700"><Check className="mr-2 h-4 w-4" />Accept</Button>
+                                </div>
+                            </div>
+                            
+                            <Separator />
+                            
+                            <div className="space-y-2">
+                                <h4 className="font-semibold">Advanced</h4>
+                                <div className="flex gap-2">
+                                    <EditBookingForm booking={selectedBooking} onSuccess={handleOnUpdateSuccess} />
+                                    <DeleteBookingDialog booking={selectedBooking} onSuccess={handleOnUpdateSuccess} />
+                                </div>
+                            </div>
+                        </div>
+                    </>
+                )}
+            </SheetContent>
+        </Sheet>
+        </>
+    );
+}
