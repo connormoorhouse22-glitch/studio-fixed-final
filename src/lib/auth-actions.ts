@@ -1,9 +1,9 @@
-
 'use server';
 
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
-import { getUserByEmail } from './user-actions';
+// Ensure this filename is exactly 'user-actions.ts' in your folder
+import { getUserByEmail } from './user-actions'; 
 
 export async function signIn(payload: { email: string; role: string; company: string }) {
   const cookieStore = cookies();
