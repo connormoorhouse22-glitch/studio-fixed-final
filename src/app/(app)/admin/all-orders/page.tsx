@@ -15,7 +15,7 @@ import { cookies } from 'next/headers';
 import { format } from 'date-fns';
 import { UpdateStatusDropdown } from '@/app/(app)/orders/update-status-dropdown';
 import { cn } from '@/lib/utils';
-import { getUserByCompany } from '@/lib/user-actions';
+import { getUserByCompany } from '@/lib/userActions';
 import { ResendNotificationButton } from '@/app/(app)/orders/resend-notification-button';
 import { ConfirmDeliveryButton } from '@/app/(app)/orders/confirm-delivery-button';
 import { DeleteOrderDialog } from './delete-order-dialog';

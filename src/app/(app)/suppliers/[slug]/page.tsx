@@ -2,7 +2,7 @@
 'use server';
 
 import { notFound } from 'next/navigation';
-import { getUserByCompany } from '@/lib/user-actions';
+import { getUserByCompany } from '@/lib/userActions';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, AtSign, Building, Phone, User as UserIcon, Hash, MapPin, BadgePercent } from 'lucide-react';

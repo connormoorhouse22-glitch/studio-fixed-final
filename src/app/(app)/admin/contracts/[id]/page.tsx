@@ -7,7 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Grape, ArrowLeft } from 'lucide-react';
 import { Separator } from '@/components/ui/separator';
 import Link from 'next/link';
-import { getUserByEmail } from '@/lib/user-actions';
+import { getUserByEmail } from '@/lib/userActions';
 import type { User } from '@/lib/users';
 import { ContractClientWrapper } from './contract-client-wrapper';
 

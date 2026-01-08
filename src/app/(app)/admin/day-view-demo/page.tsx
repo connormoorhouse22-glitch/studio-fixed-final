@@ -13,7 +13,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { getUsers, type User as Offender } from '@/lib/user-actions';
+import { getUsers, type User as Offender } from '@/lib/userActions';
 import { addOffender, getOffenders } from '@/app/(app)/admin/red-flag-zone/actions';
 import { addDays, subDays } from 'date-fns';
 import { getMachines, type Machine } from '@/lib/machine-actions';

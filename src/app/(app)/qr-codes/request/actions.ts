@@ -3,7 +3,7 @@
 
 import { cookies } from 'next/headers';
 import { sendQrCodeRequestEmail } from '@/lib/email-actions';
-import { getUserByEmail } from '@/lib/user-actions';
+import { getUserByEmail } from '@/lib/userActions';
 import type { User } from '@/lib/users';
 import { createOrderForQuote } from '@/lib/order-actions';
 

@@ -4,7 +4,7 @@
 import { useEffect } from 'react';
 import { useFormState, useFormStatus } from 'react-dom';
 import { AlertDialogAction } from '@/components/ui/alert-dialog';
-import { deleteUser } from '@/lib/user-actions';
+import { deleteUser } from '@/lib/userActions';
 import { useToast } from '@/hooks/use-toast';
 
 const initialState = {

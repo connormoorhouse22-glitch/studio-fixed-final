@@ -6,7 +6,7 @@ import { ProductCard } from '@/components/product-card';
 import { Input } from '@/components/ui/input';
 import { Search } from 'lucide-react';
 import { cookies } from 'next/headers';
-import { getUserByEmail } from '@/lib/user-actions';
+import { getUserByEmail } from '@/lib/userActions';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { notFound } from 'next/navigation';
 import { getPromotions } from '@/lib/promotion-actions';

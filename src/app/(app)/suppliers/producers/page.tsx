@@ -7,7 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { getUsers } from '@/lib/user-actions';
+import { getUsers } from '@/lib/userActions';
 import { EditTierDialog } from './edit-tier-dialog';
 
 async function handleTierUpdate() {

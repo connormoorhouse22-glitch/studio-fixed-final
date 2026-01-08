@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { inviteUser } from '@/lib/user-actions';
+import { inviteUser } from '@/lib/userActions';
 import { DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { Loader2 } from 'lucide-react';
 

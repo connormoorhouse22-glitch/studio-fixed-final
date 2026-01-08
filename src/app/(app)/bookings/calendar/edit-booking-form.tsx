@@ -76,7 +76,7 @@ function EditBookingFormContent({ booking, machines, onSuccess }: EditBookingFor
     
     useEffect(() => {
         async function fetchProvider() {
-            const { getUserByCompany } = await import('@/lib/user-actions');
+            const { getUserByCompany } = await import('@/lib/userActions');
             const providerData = await getUserByCompany(booking.providerCompany);
             setProvider(providerData);
         }

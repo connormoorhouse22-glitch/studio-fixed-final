@@ -1,7 +1,7 @@
 
 'use server';
 
-import { getSuppliersByService } from '@/lib/user-actions';
+import { getSuppliersByService } from '@/lib/userActions';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';

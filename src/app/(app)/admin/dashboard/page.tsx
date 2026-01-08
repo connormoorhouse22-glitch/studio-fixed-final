@@ -5,7 +5,7 @@ import { Suspense } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { getAuditLogs, type AuditLogEvent } from '@/lib/audit-log-actions';
 import { getOrders, type Order } from '@/lib/order-actions';
-import { getUsers, type User } from '@/lib/user-actions';
+import { getUsers, type User } from '@/lib/userActions';
 import { DollarSign, Users, Package, Activity, ArrowRight, BookUser, ShoppingBasket, Truck } from 'lucide-react';
 import { format, formatDistanceToNow, subDays } from 'date-fns';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';

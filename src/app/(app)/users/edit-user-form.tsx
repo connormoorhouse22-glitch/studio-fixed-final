@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { updateUser, getUsers } from '@/lib/user-actions';
+import { updateUser, getUsers } from '@/lib/userActions';
 import type { User, UpdateUserResponse } from '@/lib/users';
 import { DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';

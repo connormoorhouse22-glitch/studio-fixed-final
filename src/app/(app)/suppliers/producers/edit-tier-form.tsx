@@ -6,7 +6,7 @@ import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { updateUser, type User, type UpdateUserResponse } from '@/lib/user-actions';
+import { updateUser, type User, type UpdateUserResponse } from '@/lib/userActions';
 import { DialogFooter, DialogClose } from '@/components/ui/dialog';
 
 const initialState: UpdateUserResponse = {
