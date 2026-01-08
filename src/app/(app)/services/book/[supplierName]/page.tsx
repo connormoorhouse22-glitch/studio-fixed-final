@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { getSupplierBookings, getProducerBookings, type Booking } from '@/lib/booking-actions';
-import { BookingForm } from './booking-form.tsx';
+import { BookingForm } from './booking-form-v2';
 import { CalendarDays, Bot, DoorOpen } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import type { User } from '@/lib/users';
