@@ -1,16 +1,31 @@
-
 'use server';
 
 import { db } from './firebase'; 
-import { collection, query, where, getDocs, getDoc, doc, setDoc, deleteDoc, updateDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs, getDoc, doc, setDoc, deleteDoc } from 'firebase/firestore';
 import type { User, UpdateUserResponse } from './users';
 import { sendProducerWelcomeEmail, sendSupplierWelcomeEmail, sendAdminNewUserNotification } from './email-actions';
 import { revalidatePath } from 'next/cache';
-import { logAuditEvent } from './audit-log-actions';
 import { toUser } from './firebase-helpers';
 
 const usersCollection = collection(db, 'users');
 const serviceOptionsCollection = collection(db, 'serviceOptions');
+
+/**
+ * AUTH ACTION DEPENDENCY: 
+ * This specific function is required by src/lib/auth-actions.ts
+ */
+export async function getUserByEmail(email: string): Promise<User | null> {
+    if (!email) return null;
+    try {
+        const q = query(usersCollection, where('email', '==', email.toLowerCase().trim()));
+        const querySnapshot = await getDocs(q);
+        if (querySnapshot.empty) return null;
+        return toUser(querySnapshot.docs[0]);
+    } catch (error) {
+        console.error("Error in getUserByEmail:", error);
+        return null;
+    }
+}
 
 export async function getFiltrationOptions(providerCompany: string): Promise<string[]> {
     if (!providerCompany) return [];
@@ -40,7 +55,6 @@ export async function updateFiltrationOptions(providerCompany: string, options: 
      }
 }
 
-
 export async function getUsers(): Promise<User[]> {
     try {
         const querySnapshot = await getDocs(usersCollection);
@@ -48,18 +62,6 @@ export async function getUsers(): Promise<User[]> {
     } catch (error) {
         console.error("Error in getUsers:", error);
         return [];
-    }
-}
-
-export async function getUserByEmail(email: string): Promise<User | null> {
-    if (!email) return null;
-    try {
-        const q = query(usersCollection, where('email', '==', email.toLowerCase().trim()));
-        const querySnapshot = await getDocs(q);
-        if (querySnapshot.empty) return null;
-        return toUser(querySnapshot.docs[0]);
-    } catch (error) {
-        return null;
     }
 }
 
@@ -112,7 +114,6 @@ export async function updateUser(
         const userRef = doc(db, 'users', userEmail);
         const updateData: any = {};
         
-        // General form fields
         if (formData.has('name')) updateData.name = formData.get('name') as string;
         if (formData.has('company')) updateData.company = formData.get('company') as string;
         if (formData.has('role')) updateData.role = formData.get('role') as string;
@@ -130,7 +131,6 @@ export async function updateUser(
         return { message: 'Update failed.' };
     }
 }
-
 
 export async function addUser(user: Omit<User, 'id'>) {
     await setDoc(doc(db, 'users', user.email), user);
