@@ -1,8 +1,8 @@
 'use server';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ProfileSettings } from './profile-settings';
-// CHANGED: Removed '-v2' because your error log shows it's looking for the standard name or path
+// FIX: Added the .tsx extension to force the compiler to see the file
+import { ProfileSettings } from './profile-settings.tsx';
 import { EmailSettings } from './email-settings';
 import { cookies } from 'next/headers';
 import { getUserByEmail } from '@/lib/userActions';
