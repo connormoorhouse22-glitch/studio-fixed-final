@@ -1,139 +1,341 @@
-
 {
   "entities": {
-    "UserProfile": {
-      "title": "User Profile",
-      "description": "Represents a user's profile information.",
+    "User": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "User",
       "type": "object",
+      "description": "Represents a user of the MultiGate application.",
       "properties": {
-        "name": {
+        "id": {
           "type": "string",
-          "description": "The user's full name."
+          "description": "Unique identifier for the user."
+        },
+        "username": {
+          "type": "string",
+          "description": "The username of the user."
         },
         "email": {
           "type": "string",
-          "format": "email",
-          "description": "The user's email address."
+          "description": "The email address of the user.",
+          "format": "email"
         },
-        "company": {
+        "roleId": {
           "type": "string",
-          "description": "The company the user belongs to."
-        },
-        "role": {
+          "description": "Reference to the Role. (Relationship: Role 1:N User)"
+        }
+      },
+      "required": [
+        "id",
+        "username",
+        "email",
+        "roleId"
+      ]
+    },
+    "Role": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Role",
+      "type": "object",
+      "description": "Represents a user role within the MultiGate application (e.g., admin, sales, support).",
+      "properties": {
+        "id": {
           "type": "string",
-          "enum": ["Admin", "Producer", "Supplier", "Mobile Service Provider"],
-          "description": "The user's role in the system."
+          "description": "Unique identifier for the role."
         },
-        "status": {
+        "name": {
           "type": "string",
-          "enum": ["Active", "Inactive", "Pending Approval"],
-          "description": "The current status of the user's account."
+          "description": "The name of the role (e.g., 'admin', 'sales')."
         },
-        "avatar": {
-          "type": "string",
-          "format": "uri",
-          "description": "URL to the user's avatar image."
-        },
-        "lastLogin": {
-          "type": "string",
-          "description": "Timestamp of the user's last login."
-        },
-        "isOnline": {
-          "type": "boolean",
-          "description": "Indicates if the user is currently considered online."
-        },
-        "lastSeen": {
-          "type": "string",
-          "format": "date-time",
-          "description": "Timestamp of when the user was last active."
-        },
-        "pricingTiers": {
-          "type": "object",
-          "description": "A map of supplier-specific pricing tiers."
-        },
-        "preferredSupplierContacts": {
-            "type": "object",
-            "description": "A map of preferred supplier contacts."
-        },
-        "billingAddress": {
-            "type": "string",
-            "description": "The user's billing address."
-        },
-        "vatNumber": {
-            "type": "string",
-            "description": "The user's VAT number."
-        },
-        "contactNumber": {
-            "type": "string",
-            "description": "The user's contact phone number."
-        },
-        "services": {
-            "type": "array",
-            "items": {
-                "type": "string"
-            }
-        },
-        "filtrationOptions": {
+        "permissions": {
           "type": "array",
-          "description": "A list of filtration types offered by a Mobile Service Provider.",
+          "description": "The set of permissions this role has.",
           "items": {
             "type": "string"
           }
-        },
-        "signatureUrl": {
-            "type": "string",
-            "format": "uri",
-            "description": "URL to the user's signature image."
         }
       },
-      "required": ["name", "email", "company", "role", "status"]
+      "required": [
+        "id",
+        "name"
+      ]
     },
-    "WineryVessel": {
-      "title": "Winery Vessel",
-      "description": "Represents a single tank or barrel group in a producer's cellar.",
+    "Customer": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Customer",
       "type": "object",
+      "description": "Represents a customer in the sales platform.",
       "properties": {
-        "name": { "type": "string", "description": "The unique name or code for the vessel (e.g., 'T101', '2023 Merlot Barrels')." },
-        "type": { "type": "string", "enum": ["SS-Tank", "Barrel Group"], "description": "The type of vessel." },
-        "capacityLitres": { "type": "number", "description": "The total capacity of the vessel in litres." },
-        "barrelCount": { "type": "number", "description": "For barrel groups, the number of barrels." },
-        "currentContents": { "type": "string", "description": "A description of the wine currently held in the vessel." }
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the customer."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the customer."
+        },
+        "contactEmail": {
+          "type": "string",
+          "description": "The contact email address for the customer.",
+          "format": "email"
+        },
+        "salesRepId": {
+          "type": "string",
+          "description": "Reference to the User who is the sales representative for this customer. (Relationship: User 1:N Customer)"
+        }
       },
-      "required": ["name", "type"]
+      "required": [
+        "id",
+        "name",
+        "contactEmail",
+        "salesRepId"
+      ]
     },
-    "CellarLogEntry": {
-      "title": "Cellar Log Entry",
-      "description": "Represents a single action taken on a wine, such as adding a product.",
+    "Product": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Product",
       "type": "object",
+      "description": "Represents a product in the product catalog.",
       "properties": {
-        "vesselId": { "type": "string", "description": "The ID of the vessel the action was performed on." },
-        "vesselName": { "type": "string", "description": "The name of the vessel at the time of logging." },
-        "productId": { "type": "string", "description": "The ID of the product that was added." },
-        "productName": { "type": "string", "description": "The name of the product that was added." },
-        "quantityUsed": { "type": "number", "description": "The amount of the product used (e.g., in grams or mL)." },
-        "unit": { "type": "string", "description": "The unit of measurement for the quantity used." },
-        "reason": { "type": "string", "description": "The reason for the addition or action." },
-        "timestamp": { "type": "string", "format": "date-time", "description": "When the action was performed." },
-        "producerEmail": { "type": "string", "format": "email", "description": "The email of the producer who performed the action." }
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the product."
+        },
+        "name": {
+          "type": "string",
+          "description": "The name of the product."
+        },
+        "description": {
+          "type": "string",
+          "description": "A description of the product."
+        },
+        "price": {
+          "type": "number",
+          "description": "The price of the product."
+        }
       },
-      "required": ["vesselId", "vesselName", "productId", "productName", "quantityUsed", "unit", "timestamp", "producerEmail"]
+      "required": [
+        "id",
+        "name",
+        "description",
+        "price"
+      ]
+    },
+    "Order": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Order",
+      "type": "object",
+      "description": "Represents a customer order.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the order."
+        },
+        "customerId": {
+          "type": "string",
+          "description": "Reference to the Customer who placed the order. (Relationship: Customer 1:N Order)"
+        },
+        "orderDate": {
+          "type": "string",
+          "description": "The date the order was placed.",
+          "format": "date-time"
+        },
+        "status": {
+          "type": "string",
+          "description": "The current status of the order (e.g., 'pending', 'shipped', 'delivered')."
+        },
+        "orderItemIds": {
+          "type": "array",
+          "description": "References to OrderItems. (Relationship: Order N:N OrderItem)",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "customerId",
+        "orderDate",
+        "status"
+      ]
+    },
+    "OrderItem": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "OrderItem",
+      "type": "object",
+      "description": "Represents an item within an order.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the order item."
+        },
+        "productId": {
+          "type": "string",
+          "description": "Reference to the Product included in the order item. (Relationship: Product 1:N OrderItem)"
+        },
+        "quantity": {
+          "type": "number",
+          "description": "The quantity of the product in the order item."
+        },
+        "orderIds": {
+          "type": "array",
+          "description": "References to Orders. (Relationship: Order N:N OrderItem)",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "productId",
+        "quantity"
+      ]
+    },
+    "SalesStrategy": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "SalesStrategy",
+      "type": "object",
+      "description": "Represents a sales strategy generated by the AI.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the sales strategy."
+        },
+        "description": {
+          "type": "string",
+          "description": "The text of the sales strategy generated by the AI."
+        },
+        "context": {
+          "type": "string",
+          "description": "The context or prior case upon which the strategy is based."
+        }
+      },
+      "required": [
+        "id",
+        "description",
+        "context"
+      ]
     }
   },
   "auth": {
-    "providers": ["password"]
+    "providers": [
+      "password",
+      "anonymous"
+    ]
   },
   "firestore": {
-    "/users/{userId}": {
-      "schema": { "$ref": "#/entities/UserProfile" },
-      "description": "Stores public profiles for all users."
-    },
-    "/users/{userId}/vessels/{vesselId}": {
-      "schema": { "$ref": "#/entities/WineryVessel" },
-      "description": "Stores the winery vessels for a specific producer."
-    },
-    "/users/{userId}/cellar-log/{logEntryId}": {
-      "schema": { "$ref": "#/entities/CellarLogEntry" },
-      "description": "Stores the immutable log of cellar activities for a producer."
-    }
+    "structure": [
+      {
+        "path": "/users/{userId}",
+        "definition": {
+          "entityName": "User",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Stores user data.  Path-based ownership enables simple security rules for user-specific data.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier of the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/roles/{roleId}",
+        "definition": {
+          "entityName": "Role",
+          "schema": {
+            "$ref": "#/backend/entities/Role"
+          },
+          "description": "Stores role definitions and permissions.",
+          "params": [
+            {
+              "name": "roleId",
+              "description": "The unique identifier of the role."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/customers/{customerId}",
+        "definition": {
+          "entityName": "Customer",
+          "schema": {
+            "$ref": "#/backend/entities/Customer"
+          },
+          "description": "Stores customer data. Includes 'salesRepId' to manage sales representative access.",
+          "params": [
+            {
+              "name": "customerId",
+              "description": "The unique identifier of the customer."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/products/{productId}",
+        "definition": {
+          "entityName": "Product",
+          "schema": {
+            "$ref": "#/backend/entities/Product"
+          },
+          "description": "Stores product catalog data.  Accessible to all users.",
+          "params": [
+            {
+              "name": "productId",
+              "description": "The unique identifier of the product."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/orders/{orderId}",
+        "definition": {
+          "entityName": "Order",
+          "schema": {
+            "$ref": "#/backend/entities/Order"
+          },
+          "description": "Stores order data. Includes 'customerId' to link to the customer who placed the order.",
+          "params": [
+            {
+              "name": "orderId",
+              "description": "The unique identifier of the order."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/orderItems/{orderItemId}",
+        "definition": {
+          "entityName": "OrderItem",
+          "schema": {
+            "$ref": "#/backend/entities/OrderItem"
+          },
+          "description": "Stores order item data.  Links to products and orders.",
+          "params": [
+            {
+              "name": "orderItemId",
+              "description": "The unique identifier of the order item."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/salesStrategies/{salesStrategyId}",
+        "definition": {
+          "entityName": "SalesStrategy",
+          "schema": {
+            "$ref": "#/backend/entities/SalesStrategy"
+          },
+          "description": "Stores sales strategy suggestions generated by the AI.",
+          "params": [
+            {
+              "name": "salesStrategyId",
+              "description": "The unique identifier of the sales strategy."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore structure is designed to support a multi-tenant application with independent login portals and role-based access control. It leverages path-based ownership and denormalization to ensure authorization independence and facilitate secure list operations (QAPs).  The design segregates data based on ownership and role, simplifying security rules and improving debuggability.\n\n1.  **Users and Roles:** Users are stored in a `/users/{userId}` collection. Roles are managed in a `/roles/{roleId}` collection, with the user document storing a `roleId` to link users to roles.  This allows for role-based access control.\n2.  **Customers:** Customers are stored in `/customers/{customerId}`. Each customer document has a `salesRepId` to indicate the assigned sales representative. This enables sales representatives to manage customer data.\n3.  **Products:** Products are stored in a global `/products/{productId}` collection. This allows all users to browse the product catalog.\n4.  **Orders and OrderItems:** Orders are stored in `/orders/{orderId}`. Each order includes a `customerId` and an array of `orderItemIds`. OrderItems are stored in a global `/orderItems/{orderItemId}` collection, referencing product IDs and orders.\n\n**Authorization Independence (Denormalization):**\nThe design avoids `get()` calls in security rules by denormalizing authorization data. Specifically, if access to Orders was dependent on Customer attributes, the relevant Customer data would be copied into the Order document. This ensures that security rules can be evaluated independently of other documents.\n\n**QAPs (Rules are not Filters):**\nThe structure supports secure `list` operations by segregating data based on access needs. For instance, only administrators can list all users, while sales representatives can only list customers assigned to them (enforced via security rules using the `salesRepId` field)."
   }
 }

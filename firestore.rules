@@ -1,9 +1,176 @@
+/**
+ * Core Philosophy: This ruleset implements a security model based on user ownership and a specific "sales representative" relationship.
+ * Users have full control over their own user document. For other data like customers, access is granted if the user's ID is present
+ * in the document's `salesRepId` field. This approach centralizes authorization logic on the data itself.
+ *
+ * Data Structure: The database uses a flat structure with several top-level collections: /users, /roles, /customers, /products,
+ * /orders, /orderItems, and /salesStrategies. This segregation simplifies rules for each collection but requires careful
+ * management of relationships between them.
+ *
+ * Key Security Decisions:
+ * - User Isolation: Users can only read and write their own document in `/users/{userId}`. Listing users is disabled to prevent data leakage.
+ * - Sales Rep Ownership: Access to the `/customers` collection is controlled by a `salesRepId` field on each customer document. Only the assigned sales representative can read or modify a customer's data.
+ * - Query Security: Listing all customers is disallowed. This enforces the "rules are not filters" principle, requiring that client-side queries for customers must be securely constructed (e.g., via a Cloud Function) to only return documents for the currently authenticated sales representative.
+ * - Read-Only Collections: The `/roles`, `/products`, and `/salesStrategies` collections are read-only for all authenticated users to provide necessary application data without allowing modification.
+ * - Incomplete Order Security: The `/orders` and `/orderItems` collections are currently locked down. To be secured, they require denormalization: the `salesRepId` from the parent customer must be copied onto each order document to allow for efficient and secure authorization checks without slow and costly `get` calls.
+ *
+ * Denormalization for Authorization: To ensure security rules are performant and scalable, authorization-critical data is expected to be
+ * denormalized. For example, the `salesRepId` is stored directly on each `Customer` document. This avoids needing to perform extra reads
+ * to other documents during an authorization check. A similar pattern is required for the `orders` collection.
+ *
+ * Structural Segregation: The use of distinct top-level collections for different data types (e.g., `/products`, `/customers`) provides
+ * a clear and secure separation of concerns, simplifying the rules required for each.
+ */
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // TEMPORARY: Allow all authenticated users full access to verify connection
-    match /{document=**} {
-      allow read, write: if true;
+
+    // Helper functions for reusable logic
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Checks if the requesting user's UID matches the document's path ID.
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    // Checks if a document currently exists.
+    function isExistingDoc() {
+      return resource != null;
+    }
+
+    // Validates that the user is creating their own document and that the
+    // internal `id` field matches the user's auth UID for relational integrity.
+    function isCreatingOwnDoc(userId, data) {
+      return isOwner(userId) && data.id == userId;
+    }
+
+    // Validates that an existing document owner is performing an update,
+    // and that the document's internal `id` remains unchanged.
+    function isUpdatingOwnDoc(userId, existingData, newData) {
+      return isOwner(userId) && isExistingDoc() && newData.id == existingData.id;
+    }
+
+    // Validates that an existing document owner is performing a delete.
+    function isDeletingOwnDoc(userId) {
+      return isOwner(userId) && isExistingDoc();
+    }
+    
+    // Checks if the requesting user is the assigned Sales Rep on an existing document.
+    function isSalesRepForResource(docData) {
+      return isExistingDoc() && request.auth.uid == docData.salesRepId;
+    }
+
+    // Validates a user is creating a document and assigning themselves as the Sales Rep.
+    function isCreatingAsSalesRep(data) {
+      return isSignedIn() && data.salesRepId == request.auth.uid;
+    }
+
+
+    /**
+     * @description Controls access to user profile data.
+     * @path /users/{userId}
+     * @allow A user (auth.uid='user123') creating their own document at `/users/user123`. (create)
+     * @deny A user (auth.uid='userABC') trying to read or write `/users/userXYZ`. (get, update)
+     * @principle Restricts access to a user's own data tree and prevents user enumeration.
+     */
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow list: if false;
+      allow create: if isCreatingOwnDoc(userId, request.resource.data);
+      allow update: if isUpdatingOwnDoc(userId, resource.data, request.resource.data);
+      allow delete: if isDeletingOwnDoc(userId);
+    }
+
+    /**
+     * @description Provides read-only access to application roles.
+     * @path /roles/{roleId}
+     * @allow Any signed-in user reading the 'admin' role document. (get, list)
+     * @deny Any user attempting to create, update, or delete a role. (create, update, delete)
+     * @principle Protects critical application configuration data by making it immutable from the client.
+     */
+    match /roles/{roleId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    /**
+     * @description Secures customer documents, granting access only to the assigned sales representative.
+     * @path /customers/{customerId}
+     * @allow A sales rep (auth.uid='sales1') updating a customer where `salesRepId` is 'sales1'. (update)
+     * @deny A sales rep (auth.uid='sales2') trying to read a customer assigned to 'sales1'. (get)
+     * @principle Enforces document ownership via a data field (`salesRepId`) and disables broad list queries for security.
+     */
+    match /customers/{customerId} {
+      allow get: if isSalesRepForResource(resource.data);
+      allow list: if false; // Denied to enforce "rules are not filters". Client must use targeted queries (e.g., via Cloud Functions) to get a list of their own customers.
+      allow create: if isCreatingAsSalesRep(request.resource.data);
+      allow update: if isSalesRepForResource(resource.data);
+      allow delete: if isSalesRepForResource(resource.data);
+    }
+
+    /**
+     * @description Allows public, read-only access to the product catalog.
+     * @path /products/{productId}
+     * @allow Any signed-in user viewing the list of available products. (list)
+     * @deny Any user attempting to add a new product or change a price. (create, update, delete)
+     * @principle Provides public read access for globally-shared, non-sensitive data.
+     */
+    match /products/{productId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    /**
+     * @description Controls access to orders. [LOCKED]
+     * @path /orders/{orderId}
+     * @allow None. This collection is currently locked pending a schema change.
+     * @deny Any user trying to read or write an order.
+     * @principle CRITICAL: This collection is not secure. To implement owner-based security (e.g., only the customer's sales rep can see the order), the `salesRepId` must be denormalized from the Customer document onto this Order document. Without it, rules would require an insecure and slow `get()` call.
+     */
+    match /orders/{orderId} {
+      allow get: if false; // TODO: Add a denormalized 'salesRepId' field to this document to enable security rules.
+      allow list: if false; // TODO: Add a denormalized 'salesRepId' field to this document to enable security rules.
+      allow create: if false; // TODO: Add a denormalized 'salesRepId' field to this document to enable security rules.
+      allow update: if false; // TODO: Add a denormalized 'salesRepId' field to this document to enable security rules.
+      allow delete: if false; // TODO: Add a denormalized 'salesRepId' field to this document to enable security rules.
+    }
+
+    /**
+     * @description Controls access to order items. [LOCKED]
+     * @path /orderItems/{orderItemId}
+     * @allow None. This collection is currently locked pending a schema change.
+     * @deny Any user trying to read or write an order item.
+     * @principle CRITICAL: This collection has the same security issue as `/orders`. An ownership field (like `salesRepId`) must be denormalized onto this document to allow for secure access control.
+     */
+    match /orderItems/{orderItemId} {
+      allow get: if false; // TODO: Add a denormalized ownership field (e.g., 'salesRepId') to this document.
+      allow list: if false; // TODO: Add a denormalized ownership field (e.g., 'salesRepId') to this document.
+      allow create: if false; // TODO: Add a denormalized ownership field (e.g., 'salesRepId') to this document.
+      allow update: if false; // TODO: Add a denormalized ownership field (e.g., 'salesRepId') to this document.
+      allow delete: if false; // TODO: Add a denormalized ownership field (e.g., 'salesRepId') to this document.
+    }
+
+    /**
+     * @description Allows read-only access to AI-generated sales strategies.
+     * @path /salesStrategies/{salesStrategyId}
+     * @allow Any signed-in user reading a sales strategy. (get, list)
+     * @deny Any user attempting to modify or create a strategy. (create, update, delete)
+     * @principle Protects shared informational content by making it immutable from the client.
+     */
+    match /salesStrategies/{salesStrategyId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if false;
+      allow update: if false;
+      allow delete: if false;
     }
   }
 }
