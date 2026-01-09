@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
@@ -14,7 +13,6 @@ import { createBooking, type BookingResponse, type WorkOrder } from '@/lib/booki
 import { Loader2, PlusCircle, Trash2, User, Phone, MapPin } from 'lucide-react';
 import { SheetFooter, SheetClose } from '@/components/ui/sheet';
 import type { User as ProducerUser } from '@/lib/users';
-import { Separator } from '@/components/ui/separator';
 
 const initialState: BookingResponse = { success: false, message: '' };
 
@@ -22,7 +20,13 @@ function SubmitButton() {
     const { pending } = useFormStatus();
     return (
         <Button type="submit" disabled={pending}>
-            {pending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Submitting...</> : 'Submit Request'}
+            {pending ? (
+                <span className="flex items-center">
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Submitting...
+                </span>
+            ) : (
+                'Submit Request'
+            )}
         </Button>
     )
 }
@@ -52,15 +56,22 @@ interface BookingFormProps {
 
 export function BookingForm({ selectedDate, providerCompany, filtrationOptions, service, producer, onSuccess }: BookingFormProps) {
     const { toast } = useToast();
-    const createBookingWithProducer = createBooking.bind(null, producer);
-    const [state, formAction] = useFormState(createBookingWithProducer, initialState);
+    
+    // Using a more stable wrapper for the form action to prevent type errors
+    const [state, formAction] = useFormState(
+        async (prevState: BookingResponse, formData: FormData) => {
+            return await createBooking(producer, prevState, formData);
+        }, 
+        initialState
+    );
+
     const formRef = useRef<HTMLFormElement>(null);
     const [workOrders, setWorkOrders] = useState<LocalWorkOrder[]>([
         { service: service, contactPerson: producer.name, contactNumber: producer.contactNumber, location: producer.billingAddress }
     ]);
     
     useEffect(() => {
-        if (state.message) {
+        if (state?.message) {
             if (state.success) {
                 toast({ title: 'Success!', description: state.message });
                 onSuccess();
@@ -77,7 +88,7 @@ export function BookingForm({ selectedDate, providerCompany, filtrationOptions, 
     const handleWorkOrderChange = (index: number, field: keyof LocalWorkOrder, value: any) => {
         const newWorkOrders = [...workOrders];
         const currentWorkOrder = { ...newWorkOrders[index] };
-        currentWorkOrder[field] = value;
+        (currentWorkOrder as any)[field] = value;
 
         if (service === 'Mobile Labelling') {
             if (field === 'equivalentBottles') {
@@ -126,23 +137,23 @@ export function BookingForm({ selectedDate, providerCompany, filtrationOptions, 
                      <h4 className="font-semibold">Contact & Location Details</h4>
                      <div className="space-y-2 text-sm">
                         <div className="flex items-center gap-2">
-                            <User className="h-4 w-4 text-muted-foreground"/><span>{producer.name}</span>
+                            <User className="h-4 w-4 text-muted-foreground"/><span>{producer?.name || 'Producer'}</span>
                         </div>
                         <div className="flex items-center gap-2">
-                            <Phone className="h-4 w-4 text-muted-foreground"/><span>{producer.contactNumber}</span>
+                            <Phone className="h-4 w-4 text-muted-foreground"/><span>{producer?.contactNumber || 'N/A'}</span>
                         </div>
                          <div className="flex items-start gap-2">
-                            <MapPin className="h-4 w-4 text-muted-foreground mt-0.5"/><span className="whitespace-pre-wrap">{producer.billingAddress}</span>
+                            <MapPin className="h-4 w-4 text-muted-foreground mt-0.5"/><span className="whitespace-pre-wrap">{producer?.billingAddress || 'N/A'}</span>
                         </div>
                      </div>
                  </div>
 
                 {workOrders.map((wo, index) => (
-                    <div key={index} className="space-y-4 border p-4 rounded-md relative">
+                    <div key={`work-order-${index}`} className="space-y-4 border p-4 rounded-md relative">
                          <div className="flex justify-between items-center">
                             <h4 className="font-semibold">Wine #{index + 1}</h4>
                             {workOrders.length > 1 && (
-                            <Button variant="ghost" size="icon" className="text-destructive h-7 w-7 absolute top-1 right-1" onClick={() => removeWorkOrder(index)}>
+                            <Button type="button" variant="ghost" size="icon" className="text-destructive h-7 w-7 absolute top-1 right-1" onClick={() => removeWorkOrder(index)}>
                                 <Trash2 className="h-4 w-4" />
                             </Button>
                             )}
