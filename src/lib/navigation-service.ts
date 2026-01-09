@@ -1,8 +1,8 @@
 'use server';
 
-import type { NavLink as BaseNavLink } from './nav-links';
+// FIXED: Using a named import to resolve the "locally declared but not exported" error
+import { type NavLink as BaseNavLink } from './nav-links';
 import { getUsers } from './userActions';
-// FIXED: Using absolute alias to ensure the compiler finds these exports
 import { bottleSuppliers, dryGoodsSuppliers, wineAdditionsSuppliers } from '@/lib/constants';
 
 // Helper to create a URL-friendly slug
