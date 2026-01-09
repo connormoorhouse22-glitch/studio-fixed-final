@@ -1,9 +1,9 @@
 'use server';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-// Profile remains commented out since the file is physically missing from the folder
+// Profile remains commented out since the file is physically missing
 // import { ProfileSettings } from './profile-settings';
-import { EmailSettings } from './email-settings-v2';
+import { EmailSettings } from './email-settings';
 import { cookies } from 'next/headers';
 import { getUserByEmail } from '@/lib/userActions';
 
