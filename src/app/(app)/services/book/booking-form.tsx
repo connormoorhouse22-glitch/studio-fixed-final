@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
@@ -67,7 +68,7 @@ export function BookingForm({ selectedDate, providerCompany, filtrationOptions, 
 
     const formRef = useRef<HTMLFormElement>(null);
     const [workOrders, setWorkOrders] = useState<LocalWorkOrder[]>([
-        { service: service, contactPerson: producer.name, contactNumber: producer.contactNumber, location: producer.billingAddress }
+        { service: service, contactPerson: producer?.name, contactNumber: producer?.contactNumber, location: producer?.billingAddress || 'N/A' }
     ]);
     
     useEffect(() => {
@@ -105,7 +106,7 @@ export function BookingForm({ selectedDate, providerCompany, filtrationOptions, 
     };
 
     const addWorkOrder = () => {
-        setWorkOrders([...workOrders, { service: service, contactPerson: producer.name, contactNumber: producer.contactNumber, location: producer.billingAddress }]);
+        setWorkOrders([...workOrders, { service: service, contactPerson: producer?.name, contactNumber: producer?.contactNumber, location: producer?.billingAddress || 'N/A' }]);
     };
 
     const removeWorkOrder = (index: number) => {
@@ -117,7 +118,7 @@ export function BookingForm({ selectedDate, providerCompany, filtrationOptions, 
              <form ref={formRef} action={formAction} className="space-y-4 py-4">
                 <input type="hidden" name="date" value={selectedDate.toISOString()} />
                 <input type="hidden" name="providerCompany" value={providerCompany} />
-                <input type="hidden" name="workOrders" value={JSON.stringify([{ service: 'Meeting Room', volumeLiters: 0, bottleType: 'N/A', closureType: 'N/A', cultivar: 'N/A', vintage: 'N/A', contactPerson: producer.name, contactNumber: producer.contactNumber, location: providerCompany }])} />
+                <input type="hidden" name="workOrders" value={JSON.stringify([{ service: 'Meeting Room', volumeLiters: 0, bottleType: 'N/A', closureType: 'N/A', cultivar: 'N/A', vintage: 'N/A', contactPerson: producer?.name, contactNumber: producer?.contactNumber, location: providerCompany }])} />
                 <SheetFooter className="mt-6 pt-4 border-t">
                     <SheetClose asChild><Button variant="outline">Cancel</Button></SheetClose>
                     <SubmitButton />
@@ -202,7 +203,7 @@ export function BookingForm({ selectedDate, providerCompany, filtrationOptions, 
                             </Select>
                         </div>
 
-                         {service === 'Mobile Bottling' && (
+                         {service === 'Mobile Bottling' && filtrationOptions.length > 0 && (
                             <div className="space-y-1">
                                 <Label htmlFor={`filtrationType-${index}`}>Filtration Type</Label>
                                 <Select onValueChange={(v) => handleWorkOrderChange(index, 'filtrationType', v)} required>
@@ -210,7 +211,7 @@ export function BookingForm({ selectedDate, providerCompany, filtrationOptions, 
                                         <SelectValue placeholder="Select a filtration type..." />
                                     </SelectTrigger>
                                     <SelectContent position="popper" className="max-h-[300px] overflow-y-auto">
-                                        {filtrationOptions?.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}
+                                        {filtrationOptions.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}
                                     </SelectContent>
                                 </Select>
                             </div>
