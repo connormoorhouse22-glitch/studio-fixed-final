@@ -1,9 +1,9 @@
-
 'use server';
 
 import type { NavLink as BaseNavLink } from './nav-links';
 import { getUsers } from './userActions';
-import { bottleSuppliers, dryGoodsSuppliers, wineAdditionsSuppliers } from './constants';
+// FIXED: Using absolute alias to ensure the compiler finds these exports
+import { bottleSuppliers, dryGoodsSuppliers, wineAdditionsSuppliers } from '@/lib/constants';
 
 // Helper to create a URL-friendly slug
 const toSlug = (str: string) =>
