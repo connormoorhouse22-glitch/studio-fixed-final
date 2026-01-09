@@ -51,16 +51,18 @@ interface BookingFormProps {
     providerCompany: string;
     filtrationOptions: string[];
     service: 'Mobile Bottling' | 'Mobile Labelling' | 'Meeting Room';
-    producer: ProducerUser;
+    producer: ProducerUser | null;
     onSuccess: () => void;
 }
 
 export function BookingForm({ selectedDate, providerCompany, filtrationOptions, service, producer, onSuccess }: BookingFormProps) {
     const { toast } = useToast();
     
-    // Using a more stable wrapper for the form action to prevent type errors
     const [state, formAction] = useFormState(
         async (prevState: BookingResponse, formData: FormData) => {
+            if (!producer) {
+                return { success: false, message: 'Producer information is missing.' };
+            }
             return await createBooking(producer, prevState, formData);
         }, 
         initialState
@@ -118,7 +120,7 @@ export function BookingForm({ selectedDate, providerCompany, filtrationOptions, 
              <form ref={formRef} action={formAction} className="space-y-4 py-4">
                 <input type="hidden" name="date" value={selectedDate.toISOString()} />
                 <input type="hidden" name="providerCompany" value={providerCompany} />
-                <input type="hidden" name="workOrders" value={JSON.stringify([{ service: 'Meeting Room', volumeLiters: 0, bottleType: 'N/A', closureType: 'N/A', cultivar: 'N/A', vintage: 'N/A', contactPerson: producer?.name, contactNumber: producer?.contactNumber, location: providerCompany }])} />
+                <input type="hidden" name="workOrders" value={JSON.stringify([{ service: 'Meeting Room', volumeLiters: 0, bottleType: 'N/A', closureType: 'N/A', cultivar: 'N/A', vintage: 'N/A', contactPerson: producer?.name || 'N/A', contactNumber: producer?.contactNumber || 'N/A', location: providerCompany }])} />
                 <SheetFooter className="mt-6 pt-4 border-t">
                     <SheetClose asChild><Button variant="outline">Cancel</Button></SheetClose>
                     <SubmitButton />
@@ -138,7 +140,7 @@ export function BookingForm({ selectedDate, providerCompany, filtrationOptions, 
                      <h4 className="font-semibold">Contact & Location Details</h4>
                      <div className="space-y-2 text-sm">
                         <div className="flex items-center gap-2">
-                            <User className="h-4 w-4 text-muted-foreground"/><span>{producer?.name || 'Producer'}</span>
+                            <User className="h-4 w-4 text-muted-foreground"/><span>{producer?.name || 'N/A'}</span>
                         </div>
                         <div className="flex items-center gap-2">
                             <Phone className="h-4 w-4 text-muted-foreground"/><span>{producer?.contactNumber || 'N/A'}</span>

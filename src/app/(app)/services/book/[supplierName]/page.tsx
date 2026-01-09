@@ -262,7 +262,7 @@ export default function ProducerBookingPage() {
                             Confirm details for your booking on <span className="font-semibold">{selectedDate ? format(selectedDate, 'PPP') : ''}</span> with {supplierName}.
                         </SheetDescription>
                     </SheetHeader>
-                    {selectedDate && producer && (
+                    {selectedDate && (
                         <BookingForm
                             selectedDate={selectedDate}
                             providerCompany={supplierName}
