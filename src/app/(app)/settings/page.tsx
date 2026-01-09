@@ -1,9 +1,9 @@
-
 'use server';
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ProfileSettings } from './profile-settings';
-import { EmailSettings } from './email-settings';
+// CHANGED: Added '-v2' to match the actual filename in your folder
+import { EmailSettings } from './email-settings-v2';
 import { cookies } from 'next/headers';
 import { getUserByEmail } from '@/lib/userActions';
 
