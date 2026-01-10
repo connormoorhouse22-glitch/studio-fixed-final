@@ -10,7 +10,7 @@ if (!admin.apps.length && serviceAccountKey) {
     }
     admin.initializeApp({
       credential: admin.credential.cert(serviceAccount),
-      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || serviceAccount.project_id
+      projectId: "winespace-8" || serviceAccount.project_id
     });
   } catch (error) {
     console.error("LOGIN_FIX_FAILED", error);
