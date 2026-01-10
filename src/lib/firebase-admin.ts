@@ -2,24 +2,19 @@ import * as admin from 'firebase-admin';
 import * as fs from 'fs';
 import * as path from 'path';
 
-// Use a clear, local filename
+// This looks for the file we just verified exists in your sidebar
 const keyPath = path.resolve(process.cwd(), 'winespace-service-account.json');
 
 if (!admin.apps.length) {
   try {
-    if (fs.existsSync(keyPath)) {
-      const serviceAccount = JSON.parse(fs.readFileSync(keyPath, 'utf8'));
-      admin.initializeApp({
-        credential: admin.credential.cert(serviceAccount),
-        projectId: "winespace-8",
-        databaseURL: "https://winespace-8-default-rtdb.africa-south1.firebasedatabase.app"
-      });
-      console.log("Success: Admin initialized with winespace-service-account.json");
-    } else {
-      console.error("Critical: winespace-service-account.json not found at " + keyPath);
-    }
+    const serviceAccount = JSON.parse(fs.readFileSync(keyPath, 'utf8'));
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount),
+      projectId: "winespace-8-77371789-69e4d"
+    });
+    console.log("DEV LOGIN: Firebase Admin connected successfully");
   } catch (error) {
-    console.error("Initialization Error:", error);
+    console.error("DEV LOGIN ERROR:", error);
   }
 }
 
