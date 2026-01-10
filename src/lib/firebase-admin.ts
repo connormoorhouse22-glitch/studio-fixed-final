@@ -10,12 +10,12 @@ if (!admin.apps.length && serviceAccountKey) {
     }
     admin.initializeApp({
       credential: admin.credential.cert(serviceAccount),
-      projectId: "winespace-8" || serviceAccount.project_id
+      projectId: "winespace-8", databaseURL: "https://winespace-8-default-rtdb.africa-south1.firebasedatabase.app" || serviceAccount.project_id
     });
   } catch (error) {
     console.error("LOGIN_FIX_FAILED", error);
   }
 }
 
-export const dbAdmin = admin.firestore();
+export const dbAdmin = admin.firestore('winespace-8');
 export const authAdmin = admin.auth();
