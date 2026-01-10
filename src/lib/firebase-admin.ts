@@ -13,7 +13,7 @@ if (!admin.apps.length) {
       
       admin.initializeApp({
         credential: admin.credential.cert(serviceAccount),
-        projectId: "winespace-8",
+        projectId: "winespace-8", databaseURL: "https://winespace-8-default-rtdb.africa-south1.firebasedatabase.app",
         databaseURL: "https://winespace-8-default-rtdb.africa-south1.firebasedatabase.app"
       });
       console.log('Firebase Admin initialized successfully');
